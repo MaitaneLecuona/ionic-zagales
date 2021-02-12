@@ -75,5 +75,4 @@ export class EditPage implements OnInit {
     this.zagalesdbService.setItem(nextKey, this.editedActividad);
     console.warn(this.actividadForm.value);
   }
-
 }
