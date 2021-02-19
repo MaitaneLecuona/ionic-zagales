@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
-import { ZagalesdbserviceService } from '../core/zagalesdbservice.service';
+import {ZagalescrudService} from '../../app/core/zagalescrud.service'
 import { IZagales } from '../../share/interfaces';
 
 @Component({
@@ -17,15 +17,30 @@ export class DetailsPage implements OnInit{
     constructor(
         private activatedrouter: ActivatedRoute,
         private router: Router,
-        private zagalesdbService: ZagalesdbserviceService,
+        private zagalescrudService: ZagalescrudService,
         public toastController: ToastController
     ) {}
 
     ngOnInit() {
         this.id = this.activatedrouter.snapshot.params.id;
-        this.zagalesdbService.getItem(this.id).then(
-            (data:IZagales) => this.zagales = data
-        );
+        this.zagalescrudService.read_Zagales().subscribe(data => {
+            let zagales = data.map(e => {
+                return {
+                    id: e.payload.doc.id,
+                    isEdit: false,
+                    name: e.payload.doc.data()['name'],
+                    date: e.payload.doc.data()['date'],
+                    cover: e.payload.doc.data()['cover'],
+                    description: e.payload.doc.data()['description']
+                };
+            })
+            console.log(this.zagales);
+            zagales.forEach(element => {
+                if (element.id == this.id) {
+                    this.zagales = element;
+                }
+            });
+        });
     }
 
     editRecord(zagales){
@@ -42,7 +57,7 @@ export class DetailsPage implements OnInit{
                     icon: 'delete',
                     text:'ACEPTAR',
                     handler: () => {
-                        this.zagalesdbService.remove(id);
+                        this.zagalescrudService.delete_Zagales(id);
                         this.router.navigate(['home']);
                     }
                 }, {

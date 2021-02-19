@@ -2,8 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ZagalesdbserviceService } from '../core/zagalesdbservice.service';
 import { IZagales } from '../../share/interfaces';
-
-
+import {ZagalescrudService} from '../core/zagalescrud.service';
 
 @Component({
     selector: 'app-home',
@@ -11,38 +10,87 @@ import { IZagales } from '../../share/interfaces';
 })
 
 export class HomePage implements OnInit {
-    public zagales: IZagales[];
-    zagalesinit: IZagales[] = [
-        {
-            id: '1',
-            name: 'Campamento de verano',
-            date: '2021-07-01',
-            cover: '../../assets/icon/campamentoVerano.png',
-            description: "Con este campamento vas a tener la posibilidad de conocer a un monton de personas de diferentes lugares de españa y con las que podras estar 15 días increibles"
-        },
-        {
-            id: '2',
-            name: 'Javierada',
-            date: '2021-04-02',
-            cover: '../../assets/icon/javierada.png',
-            description: "Como todos los años, nos juntamos todos los zagales de Regina Pacis y los de Madrid y caminamos desde distintos puntos hasta el castillo de Javier."
-        },
-        {
-            id: '3',
-            name: 'Zaragoza',
-            date: '2021-03-25',
-            cover: '../../assets/icon/zaragoza.png',
-            description: "Con esta actividad vamos a poder ir a visitar zaragoza y luego a disfrutar del parque de atracciones."
-        }
-    ]
 
-    constructor(private zagalesdbService: ZagalesdbserviceService, private route: Router){}
+    zagales: any;
+    zagalesName: string;
+    zagalesDate: string;
+    zagalesCover: string;
+    zagalesDescription: string;
+    
+    constructor(private zagalescrudService: ZagalescrudService, private route: Router){}
 
-    ngOnInit(): void {
-        //If the database is empty set initial values
-        this.inicialization();
+    zagalTapped(zagal) {
+        this.route.navigate(['details', zagal.id]);
     }
 
+    ngOnInit(): void {
+        this.zagalescrudService.read_Zagales().subscribe(data => {
+            this.zagales = data.map(e => {
+                return {
+                    id: e.payload.doc.id,
+                    isEdit: false,
+                    name: e.payload.doc.data()['name'],
+                    date: e.payload.doc.data()['date'],
+                    cover: e.payload.doc.data()['cover'],
+                    description: e.payload.doc.data()['description']
+                };
+            })
+            console.log(this.zagales);
+           
+
+        });
+    }
+
+    CreateRecord() {
+        let record = {};
+        record['name'] = this.zagalesName;
+        record['date'] = this.zagalesDate;
+        record['cover'] = this.zagalesCover;
+        record['description'] = this.zagalesDescription;
+        this.zagalescrudService.create_Zagales(record).then(resp => {
+        this.zagalesName = "";
+        this.zagalesDate = "";
+        this.zagalesCover = "";
+        this.zagalesDescription = "";
+        console.log(resp);
+        })
+        .catch(error => {
+        console.log(error);
+        });
+        }
+
+    RemoveRecord(rowID) {
+        this.zagalescrudService.delete_Zagales(rowID);
+    }
+
+    EditRecord(record) {
+        record.isEdit = true;
+        record.EditName = record.name;
+        record.EditDate = record.date;
+        record.EditCover = record.cover;
+        record.zagalesDescription = record.description;
+    }
+
+    UpdateRecord(recordRow) {
+        let record = {};
+        record['name'] = recordRow.EditName;
+        record['date'] = recordRow.EditDate;
+        record['cover'] = recordRow.EditCover;
+        record['description'] = recordRow.zagalesDescription;
+
+        this.zagalescrudService.update_Zagales(recordRow.id, record);
+        recordRow.isEdit = false;
+    }
+
+
+
+
+
+
+
+
+
+    /*
     ionViewDidEnter(){
         //Remove elements if it already has values
         if(this.zagales !== undefined){
@@ -68,7 +116,7 @@ export class HomePage implements OnInit {
 
     zagalTapped(zagal) {
         this.route.navigate(['details', zagal.id]);
-    }
+    }*/
 }
 
 

@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
 import { ZagalesdbserviceService } from '../core/zagalesdbservice.service';
 import { IZagales } from '../../share/interfaces';
+import { ZagalescrudService } from '../core/zagalescrud.service';
 
 @Component({
     selector: 'app-create',
@@ -15,7 +16,7 @@ export class CreatePage implements OnInit{
     zagalesForm: FormGroup;
     constructor(
         private router: Router,
-        private zagalesdbService: ZagalesdbserviceService,
+        private zagalescrudService: ZagalescrudService,
         public toastController: ToastController
     ) {}
 
@@ -57,7 +58,7 @@ export class CreatePage implements OnInit{
         this.zagales = this.zagalesForm.value;
         let nextKey = this.zagales.name.trim();
         this.zagales.id = nextKey;
-        this.zagalesdbService.setItem(nextKey, this.zagales);
+        this.zagalescrudService.create_Zagales(this.zagales);
         console.warn(this.zagalesForm.value);
     }
 }
